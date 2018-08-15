@@ -142,10 +142,9 @@ class HorovodTimeline:
 
         self.path = os.path.abspath(relpath)
 
-        self.base_path = self.path.replace(".json", "") if self.path.endswith(".json") else self.path
+        self.base_path = self.path.replace(".json", "")
         self.summary_json_path = self.base_path + ".sum.json"
 
-        self.htimeline_size = os.path.getsize(self.path)
 
         self.min_ts = None
         self.max_ts = None
@@ -176,6 +175,13 @@ class HorovodTimeline:
                 # lazily update summary
                 if self.file_size_bytes != previous_file_size:
 
+                    if self.file_size_bytes < previous_file_size:
+                        # Something is very wrong. Perhaps new timeline reusing file name.
+                        # Rebuild metadata from scratch
+                        build_new_line_count = True
+                        build_new_metadata = True
+                        build_new_index = True
+
                     # Update if extract would include time not currently indexed
                     if max_extract_time:
                         max_extract_ms = max_extract_time * MICROSECONDS_PER_SEC
@@ -183,11 +189,10 @@ class HorovodTimeline:
                             build_new_line_count = True
                             build_new_index = True
 
-                    # Update if --live flag is passed in and file has grown
+                    # Update if '--live' flag is passed in and file has grown
                     if live:
                         build_new_line_count = True
                         build_new_index = True
-
 
         else:
             build_new_line_count = True
@@ -610,6 +615,7 @@ if __name__ == "__main__":
     parser.add_argument('--verify_index', help='Verify that the index makes sense. Note: this does not verify that the index matches the timeline', action="store_true")
 
     parser.add_argument('--live', help='If file has grown since last metadata build, rebuild metadata', action="store_true")
+    parser.add_argument('--force_metadata_rebuild', help='Force metadata rebuild', action="store_true")
 
 
     parser.add_argument('--timeline', type=str, help='Path to horovod_timeline. Required', required=True)
@@ -639,7 +645,10 @@ if __name__ == "__main__":
         end_time = None
 
     begin = time.time()
-    h = HorovodTimeline(htimeline_path, max_extract_time=end_time, live=ARGS.live)
+    h = HorovodTimeline(htimeline_path,
+                        max_extract_time=end_time,
+                        live=ARGS.live,
+                        build_new_summary=ARGS.force_metadata_rebuild)
 
 
     print("")
