@@ -23,9 +23,9 @@ Note: ujson module is not required, but is highly recommended. Speedup is ~2x
 ## Examples
 `python extract.py --extract --timeline ../gitignored/large_htimeline.json --start_time 0 --duration 20`
 
-`python extract.py --extract --force_metadata_rebuild --timeline ../gitignored/large_htimeline.json --start_time 0 --duration 20`
+`python extract.py --extract --timeline ../gitignored/large_htimeline.json --start_time 0 --duration 20 --force_metadata_rebuild `
 
 `python extract.py --stats --timeline ../gitignored/large_htimeline.json`
 
-`python extract.py --stats --live --timeline ../gitignored/large_htimeline.json`
+`python extract.py --stats --timeline ../gitignored/large_htimeline.json --live`
 
