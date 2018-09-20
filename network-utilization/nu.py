@@ -313,23 +313,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="HighGranularityNetworkUtilization")
 
     # Primary arguments
-    parser.add_argument('--simplesample', help='Extracts and graphs default slices of network logs. Good starting place', action="store_true")
-    parser.add_argument('--extract', help='Extract and save a subset of the network logs', action="store_true")
-    parser.add_argument('--graph', help='Generate a graph of the network logs. Save graph as image with --save', action="store_true")
+    parser.add_argument('--simplesample', help='Extracts and graphs commonly helpful slices of network logs. Saves graphs and 60s extract to folder. Good starting place for investigations.', action="store_true")
+    parser.add_argument('--extract', help='Extract and save a subset of the network logs as a BufferTimeseries JSON file (BTfile).', action="store_true")
+    parser.add_argument('--graph', help='Generate a graph of the network logs. Save graph as image with --save.', action="store_true")
 
 
     parser.add_argument('--raw', help='Path to raw network logs', type=str)
-    parser.add_argument('--saved', help='Path to saved parsed network logs. If value does not end in ".json", will automatically add ".bt.json"', type=str)
-    parser.add_argument('--live', help='[--simplesample] Use live network data instead of previously collected data', action="store_true")
+    parser.add_argument('--btfile', help='Path to saved BufferTimeseries JSON file. If value does not end in ".json", will automatically add ".bt.json".', type=str)
+    parser.add_argument('--live', help='[--simplesample only] Use live network data instead of previously collected data.', action="store_true")
 
-    parser.add_argument('--start', help='Start time of extract or graph (offset from first log entry timestamp). Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds', type=str)
-    parser.add_argument('--duration', help='Duration of extract or graph. Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds', type=str)
+    parser.add_argument('--start', help='Start time of extract or graph (offset from first log entry timestamp). Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds.', type=str)
+    parser.add_argument('--duration', help='Duration of extract or graph. Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds.', type=str)
 
-    parser.add_argument('--save', help='[--graph] Save the graph as an image instead of displaying. Value is path to image file, e.g. "my_graph.png"\n[--extract] Extract name, e.g."network_util_2_node_60s_to_180s.bt.json" or "network_util_2_node_60s_to_180s" (".bt.json" part is optional). "network_util_2_node_60s_to_180s.json" is allowed, but not recommended', type=str)
-    parser.add_argument('--simplesamplesave', help='[--simplesample only] Folder to save SimpleSample output to. Will create a SimpleSample folder within dir. Default is current working directory', type=str)
+    parser.add_argument('--save', help='Path to save output. For --graph, it should be a .png file name. For --simplesample it should be a dir. For --extract, it should be a BufferTimeseries JSON filename, although the ".bt.json" may be skipped.', type=str)
     parser.add_argument('--title', help='Title for graph', type=str)
-
-    parser.add_argument('--verbose', help='Enable verbose mode', action="store_true")
 
     ARGS = parser.parse_args()
 
@@ -359,13 +356,13 @@ if __name__ == "__main__":
     else:
         ARGS.raw = None
 
-    if ARGS.saved:
-        if not ARGS.saved.endswith(".json"):
-            ARGS.saved += ".bt.json"
+    if ARGS.btfile:
+        if not ARGS.btfile.endswith(".json"):
+            ARGS.btfile += ".bt.json"
 
-        ARGS.saved = abspathify(ARGS.saved)
+        ARGS.btfile = abspathify(ARGS.btfile)
     else:
-        ARGS.saved = None
+        ARGS.btfile = None
 
 
 
@@ -398,7 +395,7 @@ if __name__ == "__main__":
             ARGS.raw = os.path.join(ARGS.save, "network_buffer_log.txt")
             start_ms = 0
 
-        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.saved)
+        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.btfile)
         bt.simple_sampler(ARGS.save, start=start_ms)
 
 
@@ -414,7 +411,7 @@ if __name__ == "__main__":
             ARGS.save += ".bt.json"
         ARGS.save = abspathify(ARGS.save)
 
-        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.saved)
+        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.btfile)
         bt.save(ARGS.save, start_ms=start_ms, duration_ms=duration_ms)
 
 
@@ -428,7 +425,7 @@ if __name__ == "__main__":
         show_graph = False if ARGS.save else True
         graph_title = ARGS.title if ARGS.title else "Network Utilization"
 
-        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.saved)
+        bt = BufferTimeseries(log_path=ARGS.raw, btfile_path=ARGS.btfile)
         bt.graph_network_usage(title=graph_title, skip_ms=start_ms, length_ms=duration_ms, save_path=ARGS.save,
                                plt_shot=show_graph)
 
