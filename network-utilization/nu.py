@@ -296,13 +296,13 @@ def abspathify(path_str):
         return os.path.abspath(os.path.join(os.getcwd(), path_str))
 
 
-def record_network_buffer_log(save_dir):
+def record_network_buffer_log(save_dir, interface='ens3'):
     if platform.system() != "Linux":
         raise RuntimeError("--live requires ethtool and is only supported on Linux")
     save_filepath = os.path.join(save_dir, 'network_buffer_log.txt')
     with contextlib.suppress(FileNotFoundError):
         os.remove(save_filepath)
-    cmd = "while sleep .001; do printf '%s %s\n' \"$(date '+%s%3N')\" \"$(ethtool -S ens3 | grep 'rx_bytes\|tx_bytes' | xargs)\"; done >> " + save_filepath
+    cmd = "while sleep .001; do printf '%s %s\n' \"$(date '+%s%3N')\" \"$(ethtool -S "+interface+" | grep 'rx_bytes\|tx_bytes' | xargs)\"; done >> " + save_filepath
     subprocess.check_output(cmd, shell=True)
 
 
@@ -321,6 +321,8 @@ if __name__ == "__main__":
     parser.add_argument('--raw', help='Path to raw network logs', type=str)
     parser.add_argument('--btfile', help='Path to saved BufferTimeseries JSON file. If value does not end in ".json", will automatically add ".bt.json".', type=str)
     parser.add_argument('--live', help='[--simplesample only] Use live network data instead of previously collected data.', action="store_true")
+    parser.add_argument('--networkinterface', help='[--simplesample --live only] Name of the interface to watch. Default is ens3', type=str, default='ens3')
+
 
     parser.add_argument('--start', help='Start time of extract or graph (offset from first log entry timestamp). Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds.', type=str)
     parser.add_argument('--duration', help='Duration of extract or graph. Examples: "10s", "1m", "500ms". Without unit, the value is assumed to be seconds.', type=str)
@@ -386,7 +388,7 @@ if __name__ == "__main__":
             if platform.system() != "Linux":
                 raise RuntimeError("--live requires ethtool and is only supported on Linux")
             print("Recording network logs for next 60 seconds")
-            recording_proc = Process(target=record_network_buffer_log, args=[ARGS.save])
+            recording_proc = Process(target=record_network_buffer_log, args=[ARGS.save, ARGS.networkinterface])
             recording_proc.start()
             time.sleep(60)
             recording_proc.terminate()
