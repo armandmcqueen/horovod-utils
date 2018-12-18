@@ -209,8 +209,8 @@ class BufferTimeseries:
             raise RuntimeError("Code expects rx and tx timeseries to be of the same length")
 
 
-        plt.figure(figsize=(20, 10))
-        fig, (ax1, ax2) = plt.subplots(nrows=2)
+
+        fig, (ax1, ax2) = plt.subplots(nrows=2, figsize=(20, 10))
         ax1.plot(ts_timeseries, rx_timeseries, '-b', label="Received")
         ax2.plot(ts_timeseries, tx_timeseries, '-r', label="Transmitted)")
 
