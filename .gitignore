@@ -3,3 +3,5 @@ gitignored/
 .idea/
 
 venv/
+
+tig/telegraf.conf
