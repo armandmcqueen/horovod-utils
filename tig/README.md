@@ -26,14 +26,17 @@ Telegraf gives limited options when generating configuration. Add wrapper to add
 python telegraf_config.py \
     --agent_interval 1s \
     --agent_flush_interval 10s \
-    --influx_url http://127.0.0.1:8096 \
+    --influx_url http://127.0.0.1:8086 \
     --influx_db telegraf \
     --tags user=armand,cluster=2node-vgg,run=test-run \
-    --input_filters cpu:mem:diskio:disk:nvidia_smi 
+    --input_filters cpu:mem:diskio:disk:net:nvidia_smi 
 ```
 
+## Run telegraf
 
-## Setup
+`telegraf --config telegraf.conf &`
+
+## InfluxDB + Grafana Setup
 
 You should create a centralized instance that runs influxdb and grafana. 
 
