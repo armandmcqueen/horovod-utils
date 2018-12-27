@@ -9,7 +9,7 @@ def sh(cmd):
 
 
 
-def generate_telegraf_conf(agent_interval, agent_flush_interval, influx_url, influx_db, tags, input_filters):
+def generate_telegraf_conf(agent_interval, agent_flush_interval, influx_url, influx_db, tags, input_filters, hostname):
     sh("telegraf --input-filter "+input_filters+" --output-filter influxdb config > _telegraf.conf")
 
     with open('_telegraf.conf', 'r') as f:
@@ -17,6 +17,7 @@ def generate_telegraf_conf(agent_interval, agent_flush_interval, influx_url, inf
 
     conf_lines = set_agent_interval(conf_lines, agent_interval)
     conf_lines = set_agent_flush_interval(conf_lines, agent_flush_interval)
+    conf_lines = set_hostname(conf_lines, hostname)
     conf_lines = set_influxdb_urls(conf_lines, influx_url)
     conf_lines = set_influxdb_database(conf_lines, influx_db)
 
@@ -70,6 +71,11 @@ def set_agent_flush_interval(conf_lines, new_interval):
     new_param_str = 'flush_interval = "'+new_interval+'"'
     return replace_param_line(conf_lines, agent_group_str, existing_param_str, new_param_str)
 
+def set_hostname(conf_lines, hostname):
+    agent_group_str = '[agent]'
+    existing_param_str = 'hostname = ""'
+    new_param_str = 'hostname = "'+hostname+'"'
+    return replace_param_line(conf_lines, agent_group_str, existing_param_str, new_param_str)
 
 def set_influxdb_urls(conf_lines, new_url):
     influx_group_str = '[[outputs.influxdb]]'
@@ -102,8 +108,10 @@ def test():
     influxdb_url = "http://127.0.0.1:8086"
     influxdb_db = "telegraf-test"
     tags = ["run=test-run", "cluster=armand-cluster-1"]
+    input_filters = "cpu:mem:diskio:disk"
+    hostname = "algo-1"
 
-    generate_telegraf_conf(agent_interval, agent_flush_interval, influxdb_url, influxdb_db, tags)
+    generate_telegraf_conf(agent_interval, agent_flush_interval, influxdb_url, influxdb_db, tags, input_filters, hostname)
 
     with open('telegraf_example.conf', 'r') as gt:
         gt_lines = gt.readlines()
@@ -128,20 +136,30 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="telegraf-wrapper")
 
     parser.add_argument('--agent_interval', help='How often the agent extracts metrics, e.g. 10s, 10ms',
-                                            required=True)
+                                            default="1s")
     parser.add_argument('--agent_flush_interval', help='How often the agent flushes collected metrics, e.g. 10s, 10ms',
-                                                  required=True)
+                                                  default="10s")
     parser.add_argument('--influx_url', help='The url and port of the influxdb instance, e.g. "http://127.0.0.1:8096"',
-                                        required=True)
+                                        default="http://127.0.0.1:8096")
     parser.add_argument('--influx_db', help='The name of the database to write metrics to. Will be created if doesnt exist. Default=telegraf',
                                        default='telegraf')
     parser.add_argument('--tags', help='Tag name=value pairs, e.g. "user=armand,cluster=2node-1,run=test-run". '
                                        'Allows you to filter in influxdb')
     parser.add_argument('--input_filters', help='Telegraf input sources to enabled as colon-seperated list. Default="cpu:mem:diskio:disk:nvidia_smi"',
                                             default="cpu:mem:diskio:disk:nvidia_smi")
+    parser.add_argument('--test',
+                        help='Run test to config telegraf_config.py is working',
+                        action="store_true")
+    parser.add_argument('--hostname',
+                        help='Hostname. Default will use os.Hostname(). Default will not work correctly on SageMaker',
+                        default='""')
 
 
     ARGS = parser.parse_args()
+
+    if ARGS.test:
+        test()
+        quit()
 
     ARGS.tags = ARGS.tags.split(",")
 
@@ -150,7 +168,8 @@ if __name__ == "__main__":
                            ARGS.influx_url,
                            ARGS.influx_db,
                            ARGS.tags,
-                           ARGS.input_filters)
+                           ARGS.input_filters,
+                           ARGS.hostname)
 
 
 

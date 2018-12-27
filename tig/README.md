@@ -32,6 +32,10 @@ python telegraf_config.py \
     --input_filters cpu:mem:diskio:disk:net:nvidia_smi 
 ```
 
+```
+python telegraf_config.py --test
+```
+
 ## Run telegraf
 
 `telegraf --config telegraf.conf &`
