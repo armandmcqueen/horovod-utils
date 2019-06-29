@@ -8,10 +8,12 @@ Command line tool for working with very large (100+ GB) Horovod timeline files. 
 
 Highly-optimized. Naive approaches to extracting a slice can take 15+ minutes. htimeline takes under 1 minute to extract the first slice and uses cached indexes so extracting additional slices takes seconds.
 
+## TIG
+
+Utilities for installing the Telegraf-Influx-Grafana stack to monitor machine performance during training. 
+
 ## Network Utilization
 
 Utility for recording and graphing high-granularity network usage to determine if training is network bottlenecked. Functional, but TIG is now the recommended approach for examining network utilization.
 
-## TIG
 
-Utilities for installing the Telegraf-Influx-Grafana stack to monitor machine performance during training. 
