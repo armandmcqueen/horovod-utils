@@ -14,4 +14,4 @@ Utility for recording and graphing high-granularity network usage to determine i
 
 ## TIG
 
-Utilities for installing the Telegraf-Influx-Grafana stack to monitor training performance.
+Utilities for installing the Telegraf-Influx-Grafana stack to monitor machine performance during training. 
