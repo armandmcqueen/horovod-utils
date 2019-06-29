@@ -4,7 +4,9 @@ Tools for working with Horovod
 
 ## htimeline
 
-Command line tool for working with very large Horovod timeline files. Allows you to get a summary of the timeline (size, duration) and extract a slice of the timeline that will fit in memory for chrome://tracing
+Command line tool for working with very large (100+ GB) Horovod timeline files. Allows you to get a summary of the timeline (size, duration) and extract a slice of the timeline that will fit in memory for chrome://tracing. 
+
+Highly-optimized. Naive approaches to extracting a slice can take 15+ minutes. htimeline takes under 1 minute to extract the first slice and uses cached indexes so extracting additional slices takes seconds.
 
 ## Network Utilization
 
